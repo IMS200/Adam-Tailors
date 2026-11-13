@@ -38,6 +38,7 @@ assert parse_qs(urlparse(maps[0]).query)['query'] == ['17A Bury New Road, Salfor
 data = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>', text, re.S)[1])
 assert data['alternateName'] == 'آدم للخياطة'
 assert 'openingHours' not in data and 'aggregateRating' not in data
-assert text.count('lang="ar" dir="rtl"') == 3
+assert text.count('آدم للخياطة') >= 3
+assert 'lang="ar" dir="rtl"' in text
 assert (root / 'assets/social.jpg').is_file()
 print('PASS: headings, anchors, local assets, phone links, directions, Arabic and structured data.')

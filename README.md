@@ -15,11 +15,14 @@ Visit http://localhost:8000 . Stop with Ctrl-C.
 ```sh
 python3 scripts/check.py
 node --check script.js
+node --check translations.js
+node scripts/check-languages.js
 ```
 
 ## Edit
 
-- Text, business details, bilingual names, call links and structured data: `index.html`. Search for the current detail and update every occurrence, including metadata and JSON-LD. The Arabic name uses `lang="ar" dir="rtl"`.
+- Visitor text in all three languages: `translations.js`, grouped under `en` (English), `ar` (Arabic), and `ti` (Tigrinya), with matching descriptive keys. HTML uses `data-i18n` keys; image descriptions and accessibility labels use `data-i18n-alt` / `data-i18n-aria-label`. Keep all three dictionaries in sync.
+- Public business details, bilingual names, call links and structured data: `index.html`. Search for the current detail and update every occurrence, including metadata and JSON-LD. The Arabic name uses `lang="ar" dir="rtl"`.
 - Colours, fonts, spacing and responsive layout: `style.css` (variables at the top).
 - Mobile navigation and copyright year: `script.js`.
 - Photography: replace `assets/tailoring.jpg`; update its alt text, photo disclosure and `ASSETS.md`. Replace `assets/social.jpg` with a 1200 × 630 sharing image. Asset licences and sources are in `ASSETS.md`.
@@ -68,3 +71,15 @@ Ask the owner to confirm the business names (including Arabic), telephone, full 
 ## Verification
 
 Source checks cover anchor targets, image paths and descriptions, phone links, the full directions address, one H1, Arabic direction and valid factual JSON-LD. JavaScript syntax is checked separately. Browser layout inspection was blocked because Computer Use access to Google Chrome was not approved; desktop/mobile visual behavior needs browser confirmation before official launch.
+
+## Languages
+
+English is the default. The first visit opens a native modal language chooser with English selected. Choosing a radio option previews the whole experience in that language; Continue saves the choice and opens the site. The header select is always available, including on mobile. Later visits use `adam-tailors-language` in localStorage. If storage is blocked, language switching still works for the current page and a future visit shows the chooser again. The chooser requires JavaScript; without JavaScript, the English site and contact links remain usable.
+
+Arabic uses `lang="ar" dir="rtl"`; Tigrinya uses `lang="ti" dir="ltr"`. Latin postal addresses and telephone numbers stay unchanged and direction-isolated. Amiri supports Arabic and Noto Sans Ethiopic supports Tigrinya. The Arabic business name remains exactly آدم للخياطة; no Tigrinya business name is invented.
+
+Page title, description, Open Graph text, image descriptions, accessibility labels, and business description update with language selection. This is a single-URL, client-side language system; social crawlers that do not execute JavaScript receive English metadata. There are no separate crawlable language URLs.
+
+**Arabic and Tigrinya translations have not been professionally verified and need fluent-speaker review before official business use.** In particular, ask reviewers to confirm traditional-item terminology and natural phrasing.
+
+The dependency-free language behavior checks cover translation completeness, first-visit defaults, Continue, header switching, storage/reload paths, RTL/LTR document state, metadata and blocked storage. They use a DOM fixture, not a browser. Chrome Computer Use access was not approved during this update; mobile/desktop visual layout, actual Ethiopic font rendering, and native dialog keyboard/focus behavior still require browser review.
