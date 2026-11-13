@@ -1,5 +1,5 @@
 // Dependency-free behavior tests with a small DOM fixture built from the real HTML.
-// Native dialog focus trapping, actual font rendering and layout need browser QA.
+// Actual font rendering and layout need browser QA.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
@@ -21,13 +21,13 @@ function fixture(saved, blocked = false) {
     };
   }
   const nodes = {};
-  for (const id of ['.menu-toggle','#navigation','#year','#language-dialog','#language-form','#language-switcher',
+  for (const id of ['.menu-toggle','#navigation','#year','#language-switcher',
     'script[type="application/ld+json"]','meta[name="description"]','meta[property="og:title"]',
     'meta[property="og:description"]','meta[property="og:image:alt"]']) {
     nodes[id] = element(); nodes[id].id = id;
   }
   nodes['.menu-toggle'].setAttribute('aria-expanded','false');
-  nodes['#language-form'].elements = { language: { value: 'en' } };
+
   nodes['script[type="application/ld+json"]'].textContent = html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1];
   const groups = { '[data-i18n]': [], '[data-i18n-alt]': [], '[data-i18n-aria-label]': [] };
   for (const match of html.matchAll(/data-i18n(?:-alt|-aria-label)?="[^"]+"/g)) {
@@ -36,6 +36,9 @@ function fixture(saved, blocked = false) {
     if (attr === 'data-i18n') node.dataset.i18n = key;
     groups['['+attr+']'].push(node);
   }
+  groups['[data-language]'] = ['en','ar','ti'].map(language => {
+    const node = element(); node.id = 'language-'+language; node.dataset.language = language; return node;
+  });
   const document = { documentElement: {}, title: '',
     querySelector: selector => nodes[selector] || null,
     querySelectorAll: selector => groups[selector] || [],
@@ -54,7 +57,7 @@ function fixture(saved, blocked = false) {
   for (const lang of ['en','ar','ti']) {
     assert.deepEqual(Object.keys(dictionaries[lang]).sort(),keys);
     for (const value of Object.values(dictionaries[lang])) assert.equal(typeof value,'string');
-    for (const group of Object.values(groups)) for(const node of group) {
+    for (const group of Object.entries(groups).filter(([key]) => key !== '[data-language]').map(([,value]) => value)) for(const node of group) {
       const key = node.dataset.i18n || node.getAttribute('data-i18n-alt') || node.getAttribute('data-i18n-aria-label');
       assert.ok(dictionaries[lang][key],`${lang} missing ${key}`);
     }
@@ -63,31 +66,35 @@ function fixture(saved, blocked = false) {
   function fire(id,event,payload={}) { events.get(id+':'+event)(payload); }
   return {nodes,document,storage,fire,groups};
 }
+assert.ok(!html.includes('<dialog'));
+assert.ok(!code.includes('showModal'));
+assert.equal((html.match(/data-language="/g)||[]).length,3);
 let f=fixture();
 assert.equal(f.document.documentElement.lang,'en');
-assert.equal(f.nodes['#language-dialog'].open,true);
-assert.equal(f.nodes['#language-form'].elements.language.value,'en');
-assert.equal(f.nodes['#language-switcher'].value,'en');
-let cancelled=false;f.fire('#language-dialog','cancel',{preventDefault(){cancelled=true;}});assert.ok(cancelled);
-f.nodes['#language-form'].elements.language.value='ar';f.fire('#language-form','change');
-assert.equal(f.document.documentElement.dir,'rtl');assert.equal(f.document.documentElement.lang,'ar');
-assert.equal(f.storage.size,0); // Previewing a choice is saved only by Continue.
-f.fire('#language-form','submit',{preventDefault(){}});
-assert.equal(f.nodes['#language-dialog'].open,false);assert.ok(f.nodes['#language-switcher'].focused);
+assert.equal(f.document.documentElement.dir,'ltr');
+assert.equal(f.groups['[data-language]'][0].getAttribute('aria-pressed'),'true');
+f.fire('language-ar','click');
+assert.equal(f.document.documentElement.lang,'ar');
+assert.equal(f.document.documentElement.dir,'rtl');
 assert.equal(f.storage.get('adam-tailors-language'),'ar');
-f=fixture(f.storage.get('adam-tailors-language'));assert.equal(f.nodes['#language-dialog'].open,false);
-assert.equal(f.document.documentElement.lang,'ar');assert.equal(f.document.documentElement.dir,'rtl');
-f.nodes['#language-switcher'].value='ti';f.fire('#language-switcher','change');
-assert.equal(f.document.documentElement.lang,'ti');assert.equal(f.document.documentElement.dir,'ltr');
-assert.ok(f.document.title.includes('ስፌት'));assert.equal(f.storage.get('adam-tailors-language'),'ti');
-f=fixture('ti');assert.equal(f.document.documentElement.lang,'ti');assert.equal(f.nodes['#language-dialog'].open,false);
-f.nodes['#language-switcher'].value='en';f.fire('#language-switcher','change');
+assert.equal(f.groups['[data-language]'][1].getAttribute('aria-pressed'),'true');
+f=fixture(f.storage.get('adam-tailors-language'));
+assert.equal(f.document.documentElement.lang,'ar');
+f.fire('language-ti','click');
+assert.equal(f.document.documentElement.lang,'ti');
+assert.equal(f.document.documentElement.dir,'ltr');
+assert.ok(f.document.title.includes('ስፌት'));
+assert.equal(f.storage.get('adam-tailors-language'),'ti');
+f=fixture('ti');assert.equal(f.document.documentElement.lang,'ti');
+f.fire('language-en','click');
 assert.equal(f.document.title,'Adam Tailors | Tailoring and Alterations in Salford');
+assert.equal(f.storage.get('adam-tailors-language'),'en');
+assert.deepEqual(f.groups['[data-language]'].map(n=>n.getAttribute('aria-pressed')),['true','false','false']);
 f.fire('.menu-toggle','click');assert.equal(f.nodes['.menu-toggle'].getAttribute('aria-expanded'),'true');
 f.fire('document','keydown',{key:'Escape'});assert.equal(f.nodes['.menu-toggle'].getAttribute('aria-expanded'),'false');
 for(const saved of [null,'invalid']) {
  f=fixture(saved,true);assert.equal(f.document.documentElement.lang,'en');
- f.nodes['#language-form'].elements.language.value='ti';f.fire('#language-form','change');
- f.fire('#language-form','submit',{preventDefault(){}});assert.equal(f.nodes['#language-dialog'].open,false);
+ f.fire('language-ti','click');assert.equal(f.document.documentElement.lang,'ti');
 }
-console.log('PASS: complete translation keys; first visit; chooser preview/Continue; header switching; remembered Arabic/Tigrinya; RTL/LTR; metadata; storage failure; menu Escape.');
+f=fixture('invalid');assert.equal(f.document.documentElement.lang,'en');
+console.log('PASS: no popup; English default; all three header buttons; active state; switching; saved reload; RTL/LTR; metadata; storage failure; menu Escape.');

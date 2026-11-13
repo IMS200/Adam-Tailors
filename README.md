@@ -74,7 +74,7 @@ Source checks cover anchor targets, image paths and descriptions, phone links, t
 
 ## Languages
 
-English is the default. The first visit opens a native modal language chooser with English selected. Choosing a radio option previews the whole experience in that language; Continue saves the choice and opens the site. The header select is always available, including on mobile. Later visits use `adam-tailors-language` in localStorage. If storage is blocked, language switching still works for the current page and a future visit shows the chooser again. The chooser requires JavaScript; without JavaScript, the English site and contact links remain usable.
+English is the default when no valid preference is saved. There is no language-selection popup or required first-visit step. The header shows English | العربية | ትግርኛ as three accessible buttons on desktop and mobile, with the current language marked by an underline and `aria-pressed`. Buttons work with keyboard Tab and Enter/Space. Switching saves `adam-tailors-language` in localStorage. Returning visitors see their saved language. If storage is blocked, switching still works for the current page and future visits default to English. Without JavaScript, the English site and contact links remain usable.
 
 Arabic uses `lang="ar" dir="rtl"`; Tigrinya uses `lang="ti" dir="ltr"`. Latin postal addresses and telephone numbers stay unchanged and direction-isolated. Amiri supports Arabic and Noto Sans Ethiopic supports Tigrinya. The Arabic business name remains exactly آدم للخياطة; no Tigrinya business name is invented.
 
@@ -82,4 +82,4 @@ Page title, description, Open Graph text, image descriptions, accessibility labe
 
 **Arabic and Tigrinya translations have not been professionally verified and need fluent-speaker review before official business use.** In particular, ask reviewers to confirm traditional-item terminology and natural phrasing.
 
-The dependency-free language behavior checks cover translation completeness, first-visit defaults, Continue, header switching, storage/reload paths, RTL/LTR document state, metadata and blocked storage. They use a DOM fixture, not a browser. Chrome Computer Use access was not approved during this update; mobile/desktop visual layout, actual Ethiopic font rendering, and native dialog keyboard/focus behavior still require browser review.
+The dependency-free language behavior checks cover translation completeness, English defaults, absence of a popup, header buttons and active states, switching, storage/reload paths, RTL/LTR document state, metadata and blocked storage. They use a DOM fixture, not a browser. Chrome Computer Use access was not approved during this update; mobile/desktop visual layout, actual Ethiopic font rendering, and keyboard behavior still require browser review.
