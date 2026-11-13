@@ -27,7 +27,13 @@ node --check script.js
 
 ## Publish to GitHub Pages
 
-No Git repository or stored GitHub credentials were available during creation, and GitHub CLI was not installed. Nothing has been pushed or published.
+Repository: https://github.com/IMS200/Adam-Tailors
+
+GitHub Pages: https://ims200.github.io/Adam-Tailors/
+
+Pages publishes the `main` branch from the repository root. For future edits, run the checks, commit the changed website files and push to `main`. Canonical and sharing URLs are configured for this preview address.
+
+The instructions below describe creating a separate repository; skip repository creation for this existing project.
 
 1. Install the official GitHub CLI from https://cli.github.com/ and sign in with `gh auth login`.
 2. Run the following from this directory. This creates a **new public** repository. If that name already exists, inspect it first; do not push into an unrelated repository.
