@@ -5,3 +5,5 @@
 *.key
 node_modules/
 __pycache__/
+
+.local-backup/
